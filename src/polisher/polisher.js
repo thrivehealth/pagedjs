@@ -42,12 +42,19 @@ class Polisher {
 		let urls = [];
 
 		for (var i = 0; i < arguments.length; i++) {
+			// Ignore list, make sure these resources are loaded via other mechanisms
+			if (
+				["https://cdn.form.io/formiojs/formio.full.min.css"].includes(
+					arguments[i]
+				)
+			) {
+				continue;
+			}
 			let f;
-
 			if (typeof arguments[i] === "object") {
 				for (let url in arguments[i]) {
 					let obj = arguments[i];
-					f = new Promise(function(resolve, reject) {
+					f = new Promise(function (resolve, reject) {
 						urls.push(url);
 						resolve(obj[url]);
 					});
@@ -59,11 +66,13 @@ class Polisher {
 				});
 			}
 
-
 			fetched.push(f);
 		}
 
 		return await Promise.all(fetched)
+			.catch((e) => {
+				throw e;
+			})
 			.then(async (originals) => {
 				let text = "";
 				for (let index = 0; index < originals.length; index++) {
@@ -101,7 +110,7 @@ class Polisher {
 		return sheet.toString();
 	}
 
-	insert(text){
+	insert(text) {
 		let head = document.querySelector("head");
 		let style = document.createElement("style");
 		style.setAttribute("data-pagedjs-inserted-styles", "true");
